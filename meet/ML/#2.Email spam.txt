@@ -1,0 +1,92 @@
+# -----------------------------------------------------------
+# LP3 Experiment 6 (Modified for Preprocessed Enron Dataset)
+# Email Spam Classification using KNN and SVM
+# -----------------------------------------------------------
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.metrics import (
+    accuracy_score, precision_score, recall_score, f1_score,
+    confusion_matrix, classification_report
+)
+from sklearn.utils import resample
+
+# Step 1: Load dataset
+path = "emails.csv"   # or your file name
+df = pd.read_csv(path)
+
+print("\nDataset columns:", len(df.columns))
+print("First few columns:", df.columns[:10].tolist())
+
+# Step 2: Identify features (X) and label (y)
+label_col = "spam" if "spam" in df.columns else "Prediction"
+assert label_col in df.columns, "❌ Could not find 'spam' or 'Prediction' column as target."
+
+# Drop non-numeric columns (like Email No.)
+df = df.drop(columns=[c for c in df.columns if not pd.api.types.is_numeric_dtype(df[c])], errors='ignore')
+
+# Separate features and label
+X = df.drop(columns=[label_col])
+y = df[label_col]
+
+print("\nFeature matrix shape:", X.shape)
+print("Label distribution:\n", y.value_counts())
+
+# Step 3: Keep only binary classes (0, 1)
+df = df[df[label_col].isin([0, 1])]
+X = df.drop(columns=[label_col])
+y = df[label_col]
+
+# Step 4: Balance classes
+df_majority = df[df[label_col] == 0]
+df_minority = df[df[label_col] == 1]
+
+df_minority_upsampled = resample(df_minority, replace=True, n_samples=len(df_majority), random_state=42)
+df_balanced = pd.concat([df_majority, df_minority_upsampled]).sample(frac=1, random_state=42)
+
+X = df_balanced.drop(columns=[label_col])
+y = df_balanced[label_col]
+
+print("\nBalanced dataset:")
+print(y.value_counts())
+
+# Step 5: Train-test split
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+# Step 6: Scale features
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Step 7: Define models
+knn = KNeighborsClassifier(n_neighbors=5)
+svm = SVC(kernel='linear', random_state=42)
+
+models = [("KNN", knn), ("SVM", svm)]
+
+# Step 8: Train and evaluate
+for name, model in models:
+    print("\n==============================")
+    print(f"Training {name} model...")
+    model.fit(X_train_scaled, y_train)
+    y_pred = model.predict(X_test_scaled)
+
+    acc = accuracy_score(y_test, y_pred)
+    prec = precision_score(y_test, y_pred)
+    rec = recall_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred)
+
+    print(f"\n{name} Model Performance:")
+    print(f"Accuracy : {acc:.4f}")
+    print(f"Precision: {prec:.4f}")
+    print(f"Recall   : {rec:.4f}")
+    print(f"F1-Score : {f1:.4f}")
+    print("\nConfusion Matrix:\n", confusion_matrix(y_test, y_pred))
+    print("\nClassification Report:\n", classification_report(y_test, y_pred))
+
+print("\n✅ Experiment 6 completed successfully!")

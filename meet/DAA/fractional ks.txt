@@ -1,0 +1,44 @@
+import java.util.*;
+
+class Item {
+    int value, weight;
+    Item(int v, int w) {
+        value = v;
+        weight = w;
+    }
+}
+
+public class FractionalKnapsack {
+    static double getMaxValue(Item[] items, int capacity) {
+        Arrays.sort(items, (a, b) -> Double.compare((double)b.value/b.weight, (double)a.value/a.weight));
+
+        double totalValue = 0.0;
+        int step = 0;
+
+        for (Item item : items) {
+            step++;
+            if (capacity - item.weight >= 0) {
+                capacity -= item.weight;
+                totalValue += item.value;
+            } else {
+                double fraction = ((double) capacity / item.weight);
+                totalValue += item.value * fraction;
+                capacity = 0;
+                break;
+            }
+        }
+
+        System.out.println("Step Count: " + step);
+        return totalValue;
+    }
+
+    public static void main(String[] args) {
+        Item[] items = {
+            new Item(60, 10),
+            new Item(100, 20),
+            new Item(120, 30)
+        };
+        int capacity = 50;
+        System.out.println("Maximum value in Knapsack = " + getMaxValue(items, capacity));
+    }
+}

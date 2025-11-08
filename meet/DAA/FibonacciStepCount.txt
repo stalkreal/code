@@ -1,0 +1,35 @@
+public class FibonacciStepCount {
+    public static int fibRecursive(int n, int[] step) {
+        step[0]++; // count step
+        if (n <= 1)
+            return n;
+        return fibRecursive(n - 1, step) + fibRecursive(n - 2, step);
+    }
+
+    public static int fibIterative(int n, int[] step) {
+        int a = 0, b = 1, c = 0;
+        step[0] = 0;
+        if (n == 0) return a;
+        if (n == 1) return b;
+
+        for (int i = 2; i <= n; i++) {
+            c = a + b;
+            a = b;
+            b = c;
+            step[0]++;
+        }
+        return b;
+    }
+
+    public static void main(String[] args) {
+        int n = 10;
+        int[] stepRec = {0};
+        int[] stepItr = {0};
+
+        System.out.println("Fibonacci of " + n + " using Recursion: " + fibRecursive(n, stepRec));
+        System.out.println("Recursive Step Count: " + stepRec[0]);
+
+        System.out.println("\nFibonacci of " + n + " using Iteration: " + fibIterative(n, stepItr));
+        System.out.println("Iterative Step Count: " + stepItr[0]);
+    }
+}

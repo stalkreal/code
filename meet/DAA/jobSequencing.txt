@@ -1,0 +1,53 @@
+import java.util.*;
+
+class Job {
+    char id;
+    int deadline, profit;
+    Job(char id, int deadline, int profit) {
+        this.id = id;
+        this.deadline = deadline;
+        this.profit = profit;
+    }
+}
+
+public class JobSequencing {
+    public static void printJobScheduling(Job[] jobs) {
+        Arrays.sort(jobs, (a, b) -> b.profit - a.profit);
+
+        int maxDeadline = 0;
+        for (Job job : jobs)
+            maxDeadline = Math.max(maxDeadline, job.deadline);
+
+        char[] result = new char[maxDeadline];
+        boolean[] slot = new boolean[maxDeadline];
+        int totalProfit = 0, step = 0;
+
+        for (Job job : jobs) {
+            for (int j = Math.min(maxDeadline - 1, job.deadline - 1); j >= 0; j--) {
+                step++;
+                if (!slot[j]) {
+                    slot[j] = true;
+                    result[j] = job.id;
+                    totalProfit += job.profit;
+                    break;
+                }
+            }
+        }
+
+        System.out.print("Job Sequence: ");
+        for (char c : result) System.out.print(c + " ");
+        System.out.println("\nTotal Profit: " + totalProfit);
+        System.out.println("Step Count: " + step);
+    }
+
+    public static void main(String[] args) {
+        Job[] arr = {
+            new Job('a', 2, 100),
+            new Job('b', 1, 19),
+            new Job('c', 2, 27),
+            new Job('d', 1, 25),
+            new Job('e', 3, 15)
+        };
+        printJobScheduling(arr);
+    }
+}
